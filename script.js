@@ -1,4 +1,3 @@
-
 const firebaseConfig = {
   apiKey: "AIzaSyAjphMyAb7eoV1pHPyAGbDEoUkKZMXkGnU",
   authDomain: "inscripciones-9a302.firebaseapp.com",
@@ -115,9 +114,17 @@ function limpiar(texto) {
   return (texto || "").trim().replace(/\s+/g, " ");
 }
 
-function fechaHoraA_Date(fecha, hora) {
-  // fecha: YYYY-MM-DD, hora: HH:MM
-  return new Date(`${fecha}T${hora || "00:00"}`);
+function fechaSoloA_Date(fecha) {
+  // fecha: YYYY-MM-DD -> Date a las 00:00 hora local.
+  // La hora ahora es texto libre (para poner país/zona horaria), así que
+  // el orden y el estado "finalizada" se calculan solo con el día.
+  return new Date(`${fecha}T00:00:00`);
+}
+
+function hoyA_Date() {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  return hoy;
 }
 
 function formatearFecha(fecha) {
@@ -162,7 +169,13 @@ function render() {
 
   const visibles = aplicarFiltros(funciones)
     .slice()
-    .sort((a, b) => fechaHoraA_Date(a.fecha, a.hora) - fechaHoraA_Date(b.fecha, b.hora));
+    .sort((a, b) => {
+      const porFecha = fechaSoloA_Date(a.fecha) - fechaSoloA_Date(b.fecha);
+      if (porFecha !== 0) return porFecha;
+      // Si es el mismo día, ordena por la hora escrita como texto (mejor esfuerzo,
+      // ya que puede incluir el país/zona horaria).
+      return (a.hora || "").localeCompare(b.hora || "");
+    });
 
   vacio.classList.toggle("hidden", funciones.length !== 0);
   if (funciones.length !== 0 && visibles.length === 0) {
@@ -190,10 +203,18 @@ function crearTarjeta(f) {
   }
 
   const link = $(".link-transmision", nodo);
-  link.href = f.link;
+  const btnCopiar = $(".btn-copiar", nodo);
+  const sinLinkMsg = $(".sin-link", nodo);
+  if (f.link) {
+    link.href = f.link;
+  } else {
+    link.classList.add("hidden");
+    btnCopiar.classList.add("hidden");
+    sinLinkMsg.classList.remove("hidden");
+  }
 
-  const inicio = fechaHoraA_Date(f.fecha, f.hora);
-  const finalizada = inicio.getTime() < Date.now();
+  const fechaFuncion = fechaSoloA_Date(f.fecha);
+  const finalizada = fechaFuncion.getTime() < hoyA_Date().getTime();
   const badge = $(".ticket-badge", nodo);
   if (finalizada) {
     nodo.classList.add("finalizada");
@@ -201,25 +222,24 @@ function crearTarjeta(f) {
     badge.classList.remove("hidden");
   }
 
-  // Cuenta regresiva
+  // Cuenta regresiva (por día — la hora es texto libre y puede incluir país/zona horaria)
   const countdownEl = $(".ticket-countdown", nodo);
   function actualizarCountdown() {
-    const ms = inicio.getTime() - Date.now();
-    if (ms <= 0) {
+    const diffDias = Math.round((fechaFuncion.getTime() - hoyA_Date().getTime()) / 86400000);
+    const horaTexto = f.hora ? ` — ${f.hora}` : "";
+    if (diffDias < 0) {
       countdownEl.textContent = "";
-      return;
+    } else if (diffDias === 0) {
+      countdownEl.textContent = `🎬 ¡Es hoy!${horaTexto}`;
+    } else if (diffDias === 1) {
+      countdownEl.textContent = `⏳ Es mañana${horaTexto}`;
+    } else {
+      countdownEl.textContent = `⏳ Faltan ${diffDias} días${horaTexto}`;
     }
-    const dias = Math.floor(ms / 86400000);
-    const horas = Math.floor((ms % 86400000) / 3600000);
-    const min = Math.floor((ms % 3600000) / 60000);
-    const seg = Math.floor((ms % 60000) / 1000);
-    countdownEl.textContent = dias > 0
-      ? `⏳ Empieza en ${dias}d ${horas}h ${min}m`
-      : `⏳ Empieza en ${horas}h ${min}m ${seg}s`;
   }
   actualizarCountdown();
   if (!finalizada) {
-    timers.push(setInterval(actualizarCountdown, 1000));
+    timers.push(setInterval(actualizarCountdown, 60000));
   }
 
   // Asistentes
@@ -314,9 +334,9 @@ function abrirEdicion(f, puedeEditar) {
   if (anio === null) return;
   const fecha = window.prompt("Fecha (AAAA-MM-DD):", f.fecha);
   if (fecha === null) return;
-  const hora = window.prompt("Hora (HH:MM):", f.hora);
+  const hora = window.prompt("Hora (podés incluir el país o la zona horaria, ej: 20:30 Argentina):", f.hora);
   if (hora === null) return;
-  const link = window.prompt("Link de la transmisión:", f.link);
+  const link = window.prompt("Link de la transmisión (opcional, dejalo vacío si todavía no lo tenés):", f.link || "");
   if (link === null) return;
   const organizador = window.prompt("Organiza (opcional):", f.organizador || "");
 
@@ -329,8 +349,12 @@ function abrirEdicion(f, puedeEditar) {
     organizador: limpiar(organizador)
   };
 
-  if (!datos.nombre || !datos.anio || !datos.fecha || !datos.hora || !esUrlValida(datos.link)) {
+  if (!datos.nombre || !datos.anio || !datos.fecha || !datos.hora) {
     window.alert("Datos inválidos. No se guardaron los cambios.");
+    return;
+  }
+  if (datos.link && !esUrlValida(datos.link)) {
+    window.alert("El link no parece una URL válida. No se guardaron los cambios.");
     return;
   }
 
@@ -370,9 +394,8 @@ form.addEventListener("submit", async (e) => {
   if (!nombre) { setError("nombre", "Ingresá el nombre de la película."); valido = false; }
   if (!anio) { setError("anio", "Ingresá el año de estreno."); valido = false; }
   if (!fecha) { setError("fecha", "Elegí una fecha."); valido = false; }
-  if (!hora) { setError("hora", "Elegí un horario."); valido = false; }
-  if (!link) { setError("link", "Pegá el link de la transmisión."); valido = false; }
-  else if (!esUrlValida(link)) { setError("link", "El link no parece una URL válida (debe empezar con http:// o https://)."); valido = false; }
+  if (!hora) { setError("hora", "Escribí la hora (podés incluir el país o la zona horaria)."); valido = false; }
+  if (link && !esUrlValida(link)) { setError("link", "El link no parece una URL válida (debe empezar con http:// o https://)."); valido = false; }
 
   if (!valido) return;
 
