@@ -1,25 +1,3 @@
-/* =====================================================================
-   CINECLUB — script.js
-   ---------------------------------------------------------------------
-   Para que la cartelera se comparta entre TODOS los visitantes del
-   sitio (y no solo en tu propio navegador), este archivo usa Firebase
-   Firestore, que tiene un plan gratuito más que suficiente para un
-   cineclub.
-
-   CÓMO CONFIGURARLO (5 minutos, gratis):
-   1. Entrá a https://console.firebase.google.com y creá un proyecto.
-   2. Dentro del proyecto, and Build > Firestore Database > "Crear
-      base de datos". Elegí modo de producción o de prueba (podés
-      ajustar las reglas después, ver README.md).
-   3. Andá a "Configuración del proyecto" (ícono de tuerca) > tus apps
-      > ícono </> "Agregar app web". Copiá el objeto de configuración
-      que te da Firebase y pegalo abajo, reemplazando "firebaseConfig".
-   4. Subí index.html, style.css y script.js a Neocities. ¡Listo!
-
-   Si no configurás Firebase, el sitio funciona igual pero SOLO en tu
-   propio navegador (modo local), y se muestra un aviso arriba de la
-   página avisando que falta configurarlo.
-   ===================================================================== */
 
 const firebaseConfig = {
   apiKey: "AIzaSyAjphMyAb7eoV1pHPyAGbDEoUkKZMXkGnU",
@@ -30,17 +8,9 @@ const firebaseConfig = {
   appId: "1:221455024162:web:4662be1293735f08240a7b"
 };
 
-// Contraseña simple para que un "administrador" pueda editar/eliminar
-// cualquier función, además de quien la creó. Cambiala por la tuya.
 const ADMIN_PASSWORD = "cineclub-admin";
 
 const CONFIGURADO = firebaseConfig.apiKey !== "TU_API_KEY";
-
-/* =====================================================================
-   CAPA DE DATOS
-   Expone siempre la misma interfaz (subscribe / add / update / remove)
-   sin importar si estamos usando Firestore o el modo local de respaldo.
-   ===================================================================== */
 
 let backend;
 
