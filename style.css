@@ -1,0 +1,477 @@
+/* ============================================
+   TOKENS
+   ============================================ */
+:root {
+  --ink: #14171F;
+  --ink-2: #1D212C;
+  --paper: #F3EAD3;
+  --paper-2: #EADFC2;
+  --marquee: #E7A93F;
+  --marquee-dark: #C4872A;
+  --velvet: #9A2B3B;
+  --teal: #3C6E71;
+  --ink-soft: #545B6B;
+  --paper-ink: #2B2416;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+:focus-visible {
+  outline: 3px solid var(--marquee);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   FILM STRIP DECORATION
+   ============================================ */
+.film-strip {
+  height: 22px;
+  background: repeating-linear-gradient(
+    90deg,
+    #0a0b0f 0 14px,
+    #0a0b0f 14px 16px,
+    var(--ink) 16px 30px
+  );
+  position: relative;
+}
+.film-strip::before,
+.film-strip::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 0; right: 0;
+  height: 14px;
+  background-image: radial-gradient(circle, var(--ink) 4px, transparent 4.5px);
+  background-size: 30px 14px;
+  background-repeat: repeat-x;
+}
+.film-strip::after { top: 4px; }
+
+/* ============================================
+   MARQUEE HEADER
+   ============================================ */
+.marquee {
+  text-align: center;
+  padding: 2.75rem 1.5rem 2.25rem;
+  background:
+    radial-gradient(ellipse at top, #23283a 0%, var(--ink) 70%);
+  border-bottom: 1px solid #2a2f3d;
+}
+
+.bulbs {
+  height: 10px;
+  margin: 0 auto 1.1rem;
+  max-width: 480px;
+  background-image: radial-gradient(circle, var(--marquee) 3.5px, transparent 4px);
+  background-size: 22px 10px;
+  background-repeat: repeat-x;
+  opacity: 0.9;
+}
+
+.marquee-title {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  letter-spacing: 0.12em;
+  margin: 0;
+  color: var(--marquee);
+  text-shadow: 0 0 18px rgba(231, 169, 63, 0.45), 0 0 2px rgba(231,169,63,0.8);
+}
+
+.marquee-sub {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: #C7CAD6;
+  max-width: 42ch;
+  margin: 0.6rem auto 0;
+  font-size: 1rem;
+}
+
+/* ============================================
+   SETUP BANNER
+   ============================================ */
+.setup-banner {
+  background: var(--velvet);
+  color: var(--paper);
+  padding: 0.9rem 1.25rem;
+  text-align: center;
+  font-size: 0.92rem;
+}
+.setup-banner code {
+  background: rgba(0,0,0,0.25);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+.hidden { display: none !important; }
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 3rem;
+}
+
+.panel {
+  margin-bottom: 3rem;
+}
+
+.panel h2 {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  font-size: 1.9rem;
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--marquee-dark);
+  padding-bottom: 0.5rem;
+}
+
+.ticket-no {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  background: var(--marquee);
+  color: var(--ink);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0;
+}
+
+/* ============================================
+   FORM
+   ============================================ */
+#form-funcion {
+  background: var(--ink-2);
+  border: 1px solid #2b3040;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.field { margin-bottom: 1rem; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+
+label {
+  display: block;
+  font-size: 0.88rem;
+  color: #C7CAD6;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.req { color: var(--marquee); }
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="url"],
+input[type="search"] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #3a4050;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+}
+
+input::placeholder { color: #6b7180; }
+
+input:focus { border-color: var(--marquee); }
+
+.error {
+  color: #F0A0AC;
+  font-size: 0.82rem;
+  margin: 0.3rem 0 0;
+  min-height: 1.1em;
+  font-family: var(--font-mono);
+}
+
+.form-msg {
+  margin: 0.85rem 0 0;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+}
+.form-msg.ok { color: #8FD19E; }
+.form-msg.err { color: #F0A0AC; }
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--marquee);
+  color: var(--ink);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid #454b5c;
+}
+.btn-ghost:hover { border-color: var(--marquee); color: var(--marquee); }
+
+.btn-danger {
+  background: var(--velvet);
+  color: var(--paper);
+}
+
+/* ============================================
+   TOOLBAR / FILTERS
+   ============================================ */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.toolbar #buscador { flex: 1 1 240px; }
+.filtro-fecha-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #C7CAD6;
+  margin: 0;
+  white-space: nowrap;
+}
+.filtro-fecha-label input { width: auto; }
+
+.empty-state {
+  text-align: center;
+  color: #9AA0B0;
+  font-style: italic;
+  padding: 2.5rem 1rem;
+  border: 1px dashed #3a4050;
+  border-radius: var(--radius);
+}
+
+/* ============================================
+   TICKET / MOVIE CARD
+   ============================================ */
+.funciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.ticket {
+  position: relative;
+  background: var(--paper);
+  color: var(--paper-ink);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.ticket-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: -2.1rem;
+  transform: rotate(38deg);
+  background: var(--velvet);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 2.5rem;
+  text-transform: uppercase;
+}
+
+.ticket-main { padding: 1.25rem 1.25rem 1rem; }
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.ticket-titulo {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.ticket-anio {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.ticket-datos {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--paper-ink);
+}
+
+.dato-organizador {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin: 0.5rem 0 0;
+}
+
+.ticket-countdown {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--teal);
+  margin-top: 0.6rem;
+  min-height: 1.2em;
+}
+
+.ticket-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.ticket-acciones .btn { font-size: 0.82rem; padding: 0.45rem 0.8rem; }
+
+/* Perforated tear line between ticket and stub */
+.ticket-perforacion {
+  position: relative;
+  height: 0;
+  border-top: 2px dashed #C9BC96;
+  margin: 0 0.25rem;
+}
+.ticket-perforacion::before,
+.ticket-perforacion::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  background: var(--ink);
+  border-radius: 50%;
+}
+.ticket-perforacion::before { left: -9px; }
+.ticket-perforacion::after { right: -9px; }
+
+.ticket-stub {
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--paper-2);
+}
+
+.ticket-stub h4 {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.6rem;
+  color: var(--ink-soft);
+}
+
+.lista-asistentes {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.lista-asistentes li {
+  background: var(--paper);
+  border: 1px solid #D8CBA4;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.82rem;
+}
+.lista-asistentes:empty::after {
+  content: "Todavía nadie se anotó.";
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.form-inscripcion {
+  display: flex;
+  gap: 0.5rem;
+}
+.form-inscripcion input {
+  background: var(--paper);
+  border: 1px solid #D8CBA4;
+  color: var(--paper-ink);
+}
+.form-inscripcion .btn { flex-shrink: 0; padding: 0.55rem 1rem; font-size: 0.85rem; }
+
+.error-inscripcion {
+  color: var(--velvet);
+  font-size: 0.8rem;
+  margin: 0.4rem 0 0;
+  font-family: var(--font-mono);
+}
+
+/* Estado: finalizada */
+.ticket.finalizada { opacity: 0.78; }
+.ticket.finalizada .ticket-badge {
+  background: #6b7180;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: #6b7180;
+  font-size: 0.82rem;
+}

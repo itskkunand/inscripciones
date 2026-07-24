@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cineclub — Cartelera de funciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Franja de foco superior -->
+<div class="film-strip" aria-hidden="true"></div>
+
+<header class="marquee">
+  <div class="bulbs" aria-hidden="true"></div>
+  <h1 class="marquee-title">CINECLUB</h1>
+  <p class="marquee-sub">Cartelera comunitaria — proyecciones organizadas por sus propios miembros</p>
+  <div class="bulbs" aria-hidden="true"></div>
+</header>
+
+<div id="setup-banner" class="setup-banner hidden" role="alert">
+  <strong>Falta configurar la base de datos.</strong>
+  Abrí <code>script.js</code> y completá el objeto <code>firebaseConfig</code> con las credenciales de tu proyecto de Firebase.
+  Mientras tanto, la cartelera funciona solo en modo local (no se comparte entre visitantes).
+</div>
+
+<main>
+
+  <!-- Sección 1: crear función -->
+  <section class="panel" id="crear" aria-labelledby="crear-titulo">
+    <h2 id="crear-titulo"><span class="ticket-no">01</span> Anunciar una función</h2>
+    <form id="form-funcion" novalidate>
+      <div class="field">
+        <label for="f-nombre">Nombre de la película <span class="req">*</span></label>
+        <input type="text" id="f-nombre" name="nombre" placeholder="Ej: Interstellar" required>
+        <p class="error" id="err-nombre"></p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-anio">Año de estreno <span class="req">*</span></label>
+          <input type="number" id="f-anio" name="anio" placeholder="2014" min="1888" max="2100" required>
+          <p class="error" id="err-anio"></p>
+        </div>
+        <div class="field">
+          <label for="f-fecha">Fecha de la función <span class="req">*</span></label>
+          <input type="date" id="f-fecha" name="fecha" required>
+          <p class="error" id="err-fecha"></p>
+        </div>
+        <div class="field">
+          <label for="f-hora">Hora <span class="req">*</span></label>
+          <input type="time" id="f-hora" name="hora" required>
+          <p class="error" id="err-hora"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-link">Link de la transmisión <span class="req">*</span></label>
+        <input type="url" id="f-link" name="link" placeholder="https://...">
+        <p class="error" id="err-link"></p>
+      </div>
+
+      <div class="field">
+        <label for="f-organizador">Organiza (opcional)</label>
+        <input type="text" id="f-organizador" name="organizador" placeholder="Tu nombre">
+      </div>
+
+      <button type="submit" class="btn btn-primary">🎬 Crear función</button>
+      <p class="form-msg" id="form-msg" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- Sección 2: listado -->
+  <section class="panel" id="listado" aria-labelledby="listado-titulo">
+    <h2 id="listado-titulo"><span class="ticket-no">02</span> Próximas funciones</h2>
+
+    <div class="toolbar">
+      <input type="search" id="buscador" placeholder="🔍 Buscar película u organizador...">
+      <label class="filtro-fecha-label">
+        Filtrar por fecha
+        <input type="date" id="filtro-fecha">
+      </label>
+      <button type="button" id="limpiar-filtros" class="btn btn-ghost">Limpiar filtros</button>
+    </div>
+
+    <p id="vacio" class="empty-state hidden">
+      No hay funciones programadas todavía. ¡Sé el primero en anunciar una arriba! 🍿
+    </p>
+
+    <div id="funciones-lista" class="funciones-grid" aria-live="polite"></div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Hecho con ♥ para el cineclub · alojado en Neocities</p>
+</footer>
+
+<div class="film-strip" aria-hidden="true"></div>
+
+<!-- Plantilla de tarjeta / talón de entrada -->
+<template id="tpl-funcion">
+  <article class="ticket" data-id="">
+    <div class="ticket-badge estado-badge hidden"></div>
+    <div class="ticket-main">
+      <div class="ticket-header">
+        <h3 class="ticket-titulo"></h3>
+        <span class="ticket-anio"></span>
+      </div>
+      <div class="ticket-datos">
+        <span class="dato dato-fecha">📆 <span></span></span>
+        <span class="dato dato-hora">🕒 <span></span></span>
+      </div>
+      <p class="dato dato-organizador hidden">👤 Organiza: <span></span></p>
+      <div class="ticket-countdown"></div>
+      <div class="ticket-acciones">
+        <a class="btn btn-primary link-transmision" href="#" target="_blank" rel="noopener noreferrer">🔗 Ver transmisión</a>
+        <button type="button" class="btn btn-ghost btn-copiar">Copiar enlace</button>
+        <button type="button" class="btn btn-ghost btn-editar">Editar</button>
+        <button type="button" class="btn btn-ghost btn-eliminar">Eliminar</button>
+      </div>
+    </div>
+
+    <div class="ticket-perforacion" aria-hidden="true"></div>
+
+    <div class="ticket-stub">
+      <h4>Asistentes (<span class="contador-asistentes">0</span>)</h4>
+      <ul class="lista-asistentes"></ul>
+      <form class="form-inscripcion">
+        <input type="text" class="input-nombre-asistente" placeholder="Tu nombre" aria-label="Tu nombre">
+        <button type="submit" class="btn btn-primary btn-inscribirme">Inscribirme</button>
+      </form>
+      <p class="error error-inscripcion"></p>
+    </div>
+  </article>
+</template>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
