@@ -22,12 +22,12 @@
    ===================================================================== */
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAjphMyAb7eoV1pHPyAGbDEoUkKZMXkGnU",
+  authDomain: "inscripciones-9a302.firebaseapp.com",
+  projectId: "inscripciones-9a302",
+  storageBucket: "inscripciones-9a302.firebasestorage.app",
+  messagingSenderId: "221455024162",
+  appId: "1:221455024162:web:4662be1293735f08240a7b"
 };
 
 // Contraseña simple para que un "administrador" pueda editar/eliminar
