@@ -239,6 +239,14 @@ label {
   font-weight: 600;
 }
 .req { color: var(--mint-deep-2); }
+.hint { color: var(--muted); font-weight: 400; font-size: 0.82em; }
+
+.sin-link {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0.85rem 0 0;
+}
 
 input[type="text"],
 input[type="number"],
