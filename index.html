@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cineclub.exe — Cartelera de funciones</title>
+<title>Lifein35mm — Inscripciones y cartelera de funciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -29,14 +29,11 @@
   <!-- ===================== HERO / VENTANA PRINCIPAL ===================== -->
   <header class="window scene-sky">
     <div class="window-titlebar">
-      <span class="window-title">CINECLUB.EXE</span>
+      <span class="window-title">LIFE35MM.EXE</span>
       <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
     </div>
     <div class="window-body">
       <div class="mini-window avatar-window" aria-hidden="true">
-        <div class="mini-titlebar">
-          <span>Cabina ○○</span>
-        </div>
         <div class="mini-body projector">
           <svg viewBox="0 0 20 20" class="pixel-projector">
             <rect x="2" y="6" width="12" height="8" fill="currentColor"/>
@@ -48,9 +45,9 @@
         </div>
       </div>
       <div class="hero-text">
-        <p class="hero-bubble">¡Hola! Bienvenido a la cartelera del club 🎞️</p>
-        <h1 class="hero-title">Cineclub</h1>
-        <p class="hero-sub">Funciones organizadas por sus propios miembros — anotate, inscribite y no te pierdas nada.</p>
+        <p class="hero-bubble">¡Hola! Bienvenid@ a esta sección destinada para inscribir tu película y visualizar la cartelera del club en semanas libres!</p>
+        <h1 class="hero-title">LIFEIN35MM</h1>
+        <p class="hero-sub">anotate, inscribete y no te pierdas nada.</p>
       </div>
       <div class="clouds" aria-hidden="true">
         <span class="cloud c1"></span>
@@ -93,13 +90,13 @@
           </div>
           <div class="field">
             <label for="f-hora">Hora <span class="req">*</span></label>
-            <input type="time" id="f-hora" name="hora" required>
+            <input type="text" id="f-hora" name="hora" placeholder="Ej: 20:30 (Argentina)" required>
             <p class="error" id="err-hora"></p>
           </div>
         </div>
 
         <div class="field">
-          <label for="f-link">Link de la transmisión <span class="req">*</span></label>
+          <label for="f-link">Link de la transmisión <span class="hint">(opcional — se puede cargar o cambiar después)</span></label>
           <input type="url" id="f-link" name="link" placeholder="https://...">
           <p class="error" id="err-link"></p>
         </div>
@@ -109,7 +106,7 @@
           <input type="text" id="f-organizador" name="organizador" placeholder="Tu nombre">
         </div>
 
-        <button type="submit" class="btn btn-primary">🎬 Crear función</button>
+        <button type="submit" class="btn btn-primary">Crear función</button>
         <p class="form-msg" id="form-msg" aria-live="polite"></p>
       </form>
     </div>
@@ -142,7 +139,7 @@
   <!-- ===================== VENTANA: CONTACTO ===================== -->
   <section class="window scene-dusk">
     <div class="window-titlebar">
-      <span class="window-title">CONTACTO.EXE</span>
+      <span class="window-title">INFO.EXE</span>
       <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
     </div>
     <div class="window-body">
@@ -152,12 +149,11 @@
         <span class="star s3">✧</span>
         <span class="star s4">✦</span>
       </div>
-      <p class="dusk-headline">¿Querés organizar la próxima función?</p>
-      <p class="dusk-sub">Usá el formulario de arriba, ¡así de fácil!</p>
+      <p class="dusk-headline">¿Quieres organizar la próxima función?</p>
+      <p class="dusk-sub">Aquí te dejamos alguna información de relevancia</p>
       <div class="mini-window contact-window">
-        <div class="mini-titlebar"><span>Sobre este sitio ○○</span></div>
         <div class="mini-body">
-          <p>Cartelera comunitaria hecha con HTML, CSS y JavaScript — alojada en Neocities y sincronizada con Firebase.</p>
+          <p>-Quien haya organizado la función tendrá que anotar a la gente presente en esta (a pesar de contar con el registro aquí, esto para saber si asistieron)</p>
         </div>
       </div>
     </div>
@@ -193,6 +189,8 @@
         <div class="ticket-countdown"></div>
         <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
       </div>
+
+      <p class="sin-link hidden">🔗 El link todavía no fue cargado — se agrega con "Editar".</p>
 
       <div class="ticket-acciones">
         <a class="btn btn-primary link-transmision" href="#" target="_blank" rel="noopener noreferrer">🔗 Ver transmisión</a>
