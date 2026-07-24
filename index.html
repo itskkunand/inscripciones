@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cineclub.exe — Cartelera de funciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Icono pixel reutilizable (una florcita, como en la referencia) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="pixel-flower" viewBox="0 0 10 10">
+    <rect x="4" y="0" width="2" height="2" fill="currentColor"/>
+    <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="6" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="4" y="2" width="2" height="2" fill="currentColor"/>
+    <rect x="4" y="4" width="2" height="4" fill="currentColor"/>
+    <rect x="2" y="8" width="2" height="2" fill="currentColor"/>
+    <rect x="6" y="8" width="2" height="2" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<main class="desktop">
+
+  <!-- ===================== HERO / VENTANA PRINCIPAL ===================== -->
+  <header class="window scene-sky">
+    <div class="window-titlebar">
+      <span class="window-title">CINECLUB.EXE</span>
+      <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
+    </div>
+    <div class="window-body">
+      <div class="mini-window avatar-window" aria-hidden="true">
+        <div class="mini-titlebar">
+          <span>Cabina ○○</span>
+        </div>
+        <div class="mini-body projector">
+          <svg viewBox="0 0 20 20" class="pixel-projector">
+            <rect x="2" y="6" width="12" height="8" fill="currentColor"/>
+            <rect x="14" y="8" width="2" height="4" fill="currentColor"/>
+            <rect x="16" y="7" width="4" height="6" fill="currentColor" opacity="0.35"/>
+            <rect x="4" y="8" width="2" height="2" fill="#fff"/>
+            <rect x="8" y="8" width="2" height="2" fill="#fff"/>
+          </svg>
+        </div>
+      </div>
+      <div class="hero-text">
+        <p class="hero-bubble">¡Hola! Bienvenido a la cartelera del club 🎞️</p>
+        <h1 class="hero-title">Cineclub</h1>
+        <p class="hero-sub">Funciones organizadas por sus propios miembros — anotate, inscribite y no te pierdas nada.</p>
+      </div>
+      <div class="clouds" aria-hidden="true">
+        <span class="cloud c1"></span>
+        <span class="cloud c2"></span>
+        <span class="cloud c3"></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="setup-banner" class="setup-banner hidden" role="alert">
+    <strong>Falta configurar la base de datos.</strong>
+    Abrí <code>script.js</code> y completá el objeto <code>firebaseConfig</code> con las credenciales de tu proyecto de Firebase.
+    Mientras tanto, la cartelera funciona solo en modo local (no se comparte entre visitantes).
+  </div>
+
+  <!-- ===================== VENTANA: CREAR FUNCIÓN ===================== -->
+  <section class="window" id="crear" aria-labelledby="crear-titulo">
+    <div class="window-titlebar">
+      <span class="window-title" id="crear-titulo">CREAR-FUNCION.EXE</span>
+      <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
+    </div>
+    <div class="window-body window-body--plain">
+      <form id="form-funcion" novalidate>
+        <div class="field">
+          <label for="f-nombre">Nombre de la película <span class="req">*</span></label>
+          <input type="text" id="f-nombre" name="nombre" placeholder="Ej: Interstellar" required>
+          <p class="error" id="err-nombre"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-anio">Año de estreno <span class="req">*</span></label>
+            <input type="number" id="f-anio" name="anio" placeholder="2014" min="1888" max="2100" required>
+            <p class="error" id="err-anio"></p>
+          </div>
+          <div class="field">
+            <label for="f-fecha">Fecha de la función <span class="req">*</span></label>
+            <input type="date" id="f-fecha" name="fecha" required>
+            <p class="error" id="err-fecha"></p>
+          </div>
+          <div class="field">
+            <label for="f-hora">Hora <span class="req">*</span></label>
+            <input type="time" id="f-hora" name="hora" required>
+            <p class="error" id="err-hora"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-link">Link de la transmisión <span class="req">*</span></label>
+          <input type="url" id="f-link" name="link" placeholder="https://...">
+          <p class="error" id="err-link"></p>
+        </div>
+
+        <div class="field">
+          <label for="f-organizador">Organiza (opcional)</label>
+          <input type="text" id="f-organizador" name="organizador" placeholder="Tu nombre">
+        </div>
+
+        <button type="submit" class="btn btn-primary">🎬 Crear función</button>
+        <p class="form-msg" id="form-msg" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== VENTANA: CARTELERA ===================== -->
+  <section class="window" id="listado" aria-labelledby="listado-titulo">
+    <div class="window-titlebar">
+      <span class="window-title" id="listado-titulo">CARTELERA.EXE</span>
+      <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
+    </div>
+    <div class="window-body window-body--plain">
+      <div class="toolbar">
+        <input type="search" id="buscador" placeholder="🔍 Buscar película u organizador...">
+        <label class="filtro-fecha-label">
+          Filtrar por fecha
+          <input type="date" id="filtro-fecha">
+        </label>
+        <button type="button" id="limpiar-filtros" class="btn btn-ghost">Limpiar filtros</button>
+      </div>
+
+      <p id="vacio" class="empty-state hidden">
+        No hay funciones programadas todavía. ¡Sé el primero en anunciar una arriba! 🍿
+      </p>
+
+      <div id="funciones-lista" class="funciones-grid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ===================== VENTANA: CONTACTO ===================== -->
+  <section class="window scene-dusk">
+    <div class="window-titlebar">
+      <span class="window-title">CONTACTO.EXE</span>
+      <span class="window-leds" aria-hidden="true"><i></i><i></i></span>
+    </div>
+    <div class="window-body">
+      <div class="stars" aria-hidden="true">
+        <span class="star s1">✦</span>
+        <span class="star s2">✦</span>
+        <span class="star s3">✧</span>
+        <span class="star s4">✦</span>
+      </div>
+      <p class="dusk-headline">¿Querés organizar la próxima función?</p>
+      <p class="dusk-sub">Usá el formulario de arriba, ¡así de fácil!</p>
+      <div class="mini-window contact-window">
+        <div class="mini-titlebar"><span>Sobre este sitio ○○</span></div>
+        <div class="mini-body">
+          <p>Cartelera comunitaria hecha con HTML, CSS y JavaScript — alojada en Neocities y sincronizada con Firebase.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <svg class="footer-flower" viewBox="0 0 10 10" aria-hidden="true"><use href="#pixel-flower"/></svg>
+  <p>Hecho con ♥ para el cineclub</p>
+</footer>
+
+<!-- Plantilla de tarjeta / mini-ventana de función -->
+<template id="tpl-funcion">
+  <article class="ticket mini-window" data-id="">
+    <div class="ticket-badge estado-badge hidden"></div>
+    <div class="mini-titlebar">
+      <span class="ticket-titulo"></span>
+      <span class="mini-leds" aria-hidden="true"><i></i><i></i></span>
+    </div>
+
+    <div class="mini-body">
+      <div class="ticket-header">
+        <span class="ticket-anio"></span>
+      </div>
+      <div class="ticket-datos">
+        <span class="dato dato-fecha">📆 <span></span></span>
+        <span class="dato dato-hora">🕒 <span></span></span>
+      </div>
+      <p class="dato dato-organizador hidden">👤 Organiza: <span></span></p>
+
+      <div class="ticket-countdown-wrap">
+        <div class="ticket-countdown"></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill"></div></div>
+      </div>
+
+      <div class="ticket-acciones">
+        <a class="btn btn-primary link-transmision" href="#" target="_blank" rel="noopener noreferrer">🔗 Ver transmisión</a>
+        <button type="button" class="btn btn-ghost btn-copiar">Copiar enlace</button>
+        <button type="button" class="btn btn-ghost btn-editar">Editar</button>
+        <button type="button" class="btn btn-ghost btn-eliminar">Eliminar</button>
+      </div>
+    </div>
+
+    <div class="ticket-stub">
+      <div class="mini-titlebar mini-titlebar--sub"><span>Asistentes (<span class="contador-asistentes">0</span>) ○○</span></div>
+      <div class="mini-body">
+        <ul class="lista-asistentes"></ul>
+        <form class="form-inscripcion">
+          <input type="text" class="input-nombre-asistente" placeholder="Tu nombre" aria-label="Tu nombre">
+          <button type="submit" class="btn btn-primary btn-inscribirme">Inscribirme</button>
+        </form>
+        <p class="error error-inscripcion"></p>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
