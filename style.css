@@ -2,7 +2,7 @@
    TOKENS
    ============================================ */
 :root {
-  --paper: #FBFAF6;      /* fondo de página */
+  --paper: #D6F7FF;      /* fondo de página */
   --ink: #202821;         /* bordes / texto principal */
   --mint: #AFD9CC;        /* escena cielo */
   --mint-2: #C6E6DB;      /* escena cielo, tono claro */
@@ -330,6 +330,29 @@ input:focus { border-color: var(--mint-deep); }
   padding: 2.25rem 1rem;
   border: 2px dashed #C7D2CB;
   border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   CARPETAS MENSUALES
+   ============================================ */
+.carpeta-mes {
+  margin-bottom: 2rem;
+}
+.carpeta-mes:last-child { margin-bottom: 0; }
+
+.carpeta-mes > .mini-titlebar {
+  background: var(--mint-2);
+  font-size: 0.88rem;
+}
+
+.carpeta-contador {
+  font-weight: 400;
+  opacity: 0.7;
+  margin-left: 0.15rem;
+}
+
+.carpeta-mes > .mini-body {
+  padding: 1.25rem;
 }
 
 /* ============================================
