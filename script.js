@@ -11,38 +11,100 @@ const ADMIN_PASSWORD = "cineclub-admin";
 
 const CONFIGURADO = firebaseConfig.apiKey !== "TU_API_KEY";
 
+
+const NOMBRES_MES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+];
+
+function mesInfo(fechaStr) {
+  const [anioStr, mesStr] = (fechaStr || "").split("-");
+  const anio = Number(anioStr);
+  const mes = Number(mesStr);
+  const nombreMes = NOMBRES_MES[mes - 1] || "Sin-mes";
+  return {
+    mesId: `${anioStr}-${mesStr}`,       // ej: "2026-07" → id de la carpeta
+    anio,
+    mes,
+    carpeta: `Funciones ${nombreMes}`,    // ej: "Funciones Julio"
+    etiqueta: `Funciones ${nombreMes} ${anio}` // con año, para no confundir julios de distintos años
+  };
+}
+
+/* =====================================================================
+   CAPA DE DATOS
+   Expone siempre la misma interfaz (subscribe / add / update / remove)
+   sin importar si estamos usando Firestore o el modo local de respaldo.
+   Cada función viaja acompañada de su "f" completo (no solo el id)
+   para que el backend sepa en qué carpeta de mes vive.
+   ===================================================================== */
+
 let backend;
 
 if (CONFIGURADO) {
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
   const {
-    getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-    doc, arrayUnion, serverTimestamp
+    getFirestore, collection, collectionGroup, onSnapshot, addDoc, updateDoc,
+    deleteDoc, doc, setDoc, arrayUnion, serverTimestamp
   } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const col = collection(db, "funciones");
+
+  const carpetaRef = (mesId) => doc(db, "carpetas", mesId);
+  const funcionesDelMes = (mesId) => collection(db, "carpetas", mesId, "funciones");
+
+  // Crea (o actualiza) el documento de la carpeta del mes. setDoc con
+  // merge:true no pisa nada si la carpeta ya existía — así se "crea
+  // automáticamente" la primera vez y después simplemente se reutiliza.
+  async function asegurarCarpeta(info) {
+    await setDoc(carpetaRef(info.mesId), {
+      nombre: info.carpeta,
+      anio: info.anio,
+      mes: info.mes
+    }, { merge: true });
+  }
 
   backend = {
     subscribe(cb) {
-      return onSnapshot(col, (snap) => {
+      // collectionGroup escucha la subcolección "funciones" dentro de
+      // TODAS las carpetas de mes a la vez, en tiempo real.
+      const q = collectionGroup(db, "funciones");
+      return onSnapshot(q, (snap) => {
         const items = [];
-        snap.forEach((d) => items.push({ id: d.id, ...d.data() }));
+        snap.forEach((d) => {
+          items.push({ id: d.id, mesId: d.ref.parent.parent.id, ...d.data() });
+        });
         cb(items);
       });
     },
     async add(data) {
-      await addDoc(col, { ...data, creadoEn: serverTimestamp() });
+      const info = mesInfo(data.fecha);
+      await asegurarCarpeta(info);
+      await addDoc(funcionesDelMes(info.mesId), {
+        ...data,
+        mesId: info.mesId,
+        creadoEn: serverTimestamp()
+      });
     },
-    async update(id, data) {
-      await updateDoc(doc(db, "funciones", id), data);
+    async update(f, cambios) {
+      const infoNueva = mesInfo(cambios.fecha);
+      if (infoNueva.mesId === f.mesId) {
+        await updateDoc(doc(db, "carpetas", f.mesId, "funciones", f.id), cambios);
+      } else {
+        // La función cambió de mes (se editó la fecha): se mueve a la
+        // carpeta correspondiente, creándola si todavía no existe.
+        await asegurarCarpeta(infoNueva);
+        const { id, mesId, ...resto } = f;
+        await addDoc(funcionesDelMes(infoNueva.mesId), { ...resto, ...cambios, mesId: infoNueva.mesId });
+        await deleteDoc(doc(db, "carpetas", f.mesId, "funciones", f.id));
+      }
     },
-    async addAsistente(id, nombre) {
-      await updateDoc(doc(db, "funciones", id), { asistentes: arrayUnion(nombre) });
+    async addAsistente(f, nombre) {
+      await updateDoc(doc(db, "carpetas", f.mesId, "funciones", f.id), { asistentes: arrayUnion(nombre) });
     },
-    async remove(id) {
-      await deleteDoc(doc(db, "funciones", id));
+    async remove(f) {
+      await deleteDoc(doc(db, "carpetas", f.mesId, "funciones", f.id));
     }
   };
 } else {
@@ -69,25 +131,29 @@ if (CONFIGURADO) {
       return () => listeners.delete(cb);
     },
     async add(data) {
+      const info = mesInfo(data.fecha);
       const items = leer();
-      items.push({ id: idNuevo(), ...data });
+      items.push({ id: idNuevo(), ...data, mesId: info.mesId });
       escribir(items);
     },
-    async update(id, data) {
-      const items = leer().map((it) => (it.id === id ? { ...it, ...data } : it));
+    async update(f, cambios) {
+      const infoNueva = mesInfo(cambios.fecha);
+      const items = leer().map((it) =>
+        it.id === f.id ? { ...it, ...cambios, mesId: infoNueva.mesId } : it
+      );
       escribir(items);
     },
-    async addAsistente(id, nombre) {
+    async addAsistente(f, nombre) {
       const items = leer().map((it) => {
-        if (it.id !== id) return it;
+        if (it.id !== f.id) return it;
         const asistentes = Array.isArray(it.asistentes) ? it.asistentes : [];
         if (asistentes.includes(nombre)) return it;
         return { ...it, asistentes: [...asistentes, nombre] };
       });
       escribir(items);
     },
-    async remove(id) {
-      escribir(leer().filter((it) => it.id !== id));
+    async remove(f) {
+      escribir(leer().filter((it) => it.id !== f.id));
     }
   };
 }
@@ -167,15 +233,7 @@ function render() {
   timers.length = 0;
   cont.innerHTML = "";
 
-  const visibles = aplicarFiltros(funciones)
-    .slice()
-    .sort((a, b) => {
-      const porFecha = fechaSoloA_Date(a.fecha) - fechaSoloA_Date(b.fecha);
-      if (porFecha !== 0) return porFecha;
-      // Si es el mismo día, ordena por la hora escrita como texto (mejor esfuerzo,
-      // ya que puede incluir el país/zona horaria).
-      return (a.hora || "").localeCompare(b.hora || "");
-    });
+  const visibles = aplicarFiltros(funciones);
 
   vacio.classList.toggle("hidden", funciones.length !== 0);
   if (funciones.length !== 0 && visibles.length === 0) {
@@ -183,7 +241,47 @@ function render() {
     return;
   }
 
-  visibles.forEach((f) => cont.appendChild(crearTarjeta(f)));
+  // Agrupar automáticamente por mes ("carpeta"): cada función cae en
+  // el grupo que le corresponde según su fecha, sin intervención manual.
+  const carpetas = new Map();
+  visibles.forEach((f) => {
+    const info = mesInfo(f.fecha);
+    if (!carpetas.has(info.mesId)) carpetas.set(info.mesId, { info, items: [] });
+    carpetas.get(info.mesId).items.push(f);
+  });
+
+  const mesesOrdenados = Array.from(carpetas.keys()).sort();
+
+  mesesOrdenados.forEach((mesId) => {
+    const { info, items } = carpetas.get(mesId);
+    items.sort((a, b) => {
+      const porFecha = fechaSoloA_Date(a.fecha) - fechaSoloA_Date(b.fecha);
+      if (porFecha !== 0) return porFecha;
+      return (a.hora || "").localeCompare(b.hora || "");
+    });
+    cont.appendChild(crearCarpeta(info, items));
+  });
+}
+
+function crearCarpeta(info, items) {
+  const carpeta = document.createElement("section");
+  carpeta.className = "mini-window carpeta-mes";
+  carpeta.setAttribute("aria-label", info.etiqueta);
+
+  const barra = document.createElement("div");
+  barra.className = "mini-titlebar";
+  barra.innerHTML = `<span>🗂️ ${info.etiqueta} <span class="carpeta-contador">(${items.length})</span></span>`;
+  carpeta.appendChild(barra);
+
+  const cuerpo = document.createElement("div");
+  cuerpo.className = "mini-body";
+  const grid = document.createElement("div");
+  grid.className = "funciones-grid";
+  items.forEach((f) => grid.appendChild(crearTarjeta(f)));
+  cuerpo.appendChild(grid);
+  carpeta.appendChild(cuerpo);
+
+  return carpeta;
 }
 
 function crearTarjeta(f) {
@@ -267,7 +365,7 @@ function crearTarjeta(f) {
     const btn = $(".btn-inscribirme", nodo);
     btn.disabled = true;
     try {
-      await backend.addAsistente(f.id, nombre);
+      await backend.addAsistente(f, nombre);
       input.value = "";
     } catch (err) {
       errInsc.textContent = "No se pudo guardar la inscripción. Intentá de nuevo.";
@@ -318,7 +416,7 @@ async function eliminarFuncion(f, puedeEditar) {
   const ok = window.confirm(`¿Eliminar la función "${f.nombre}"? Esta acción no se puede deshacer.`);
   if (!ok) return;
   try {
-    await backend.remove(f.id);
+    await backend.remove(f);
   } catch (err) {
     window.alert("No se pudo eliminar la función.");
     console.error(err);
@@ -358,7 +456,9 @@ function abrirEdicion(f, puedeEditar) {
     return;
   }
 
-  backend.update(f.id, datos).catch((err) => {
+  // Si la fecha cambió de mes, esto mueve la función a la carpeta
+  // mensual correspondiente automáticamente (ver backend.update).
+  backend.update(f, datos).catch((err) => {
     window.alert("No se pudieron guardar los cambios.");
     console.error(err);
   });
@@ -402,6 +502,8 @@ form.addEventListener("submit", async (e) => {
   const btn = $('button[type="submit"]', form);
   btn.disabled = true;
   try {
+    // La carpeta del mes (ej. "Funciones Julio") se crea sola acá adentro
+    // si todavía no existía — ver backend.add más arriba.
     await backend.add({
       nombre,
       anio: Number(anio),
@@ -413,7 +515,7 @@ form.addEventListener("submit", async (e) => {
       creatorId: creatorId()
     });
     form.reset();
-    msg.textContent = "¡Función creada! Ya aparece en la cartelera de abajo. 🎉";
+    msg.textContent = "¡Función creada! Ya aparece en su carpeta del mes, abajo. 🎉";
     msg.classList.add("ok");
   } catch (err) {
     msg.textContent = "Ocurrió un error al guardar la función. Probá de nuevo.";
